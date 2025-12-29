@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { SessionUser } from '@/lib/auth';
+import { Header } from '@/components/Header';
 import { BottomTabBar } from '@/components/BottomTabBar';
 
 interface Platform {
@@ -94,9 +95,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
     }
   };
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/';
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
   };
 
   const formatDate = (dateString: string) => {
@@ -122,51 +123,52 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Header */}
-      <header className="bg-surface border-b border-border sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-text-primary">moah.</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-text-secondary hidden sm:block">@{user.telegram_username || 'user'}</span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-text-secondary hover:text-primary transition-colors hidden md:block"
-            >
-              로그아웃
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Header with Search */}
+      <Header 
+        username={user.telegram_username}
+        searchValue={search}
+        onSearchChange={handleSearchChange}
+      />
 
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Filters */}
-        <div className="bg-surface rounded-xl shadow-sm p-4 mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            {/* Search */}
+        {/* Mobile Search */}
+        <div className="md:hidden mb-4">
+          <div className="relative">
+            <svg 
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary"
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="text"
               placeholder="검색..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="flex-1 min-w-[200px] px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             />
-            
-            {/* Platform Filter */}
-            <div className="flex gap-2 flex-wrap">
-              {platforms.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => { setPlatform(p.name); setPage(1); }}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    platform === p.name
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
-                  }`}
-                >
-                  {p.icon} {p.display}
-                </button>
-              ))}
-            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-surface rounded-xl shadow-sm p-4 mb-6">
+          {/* Platform Filter */}
+          <div className="flex gap-2 flex-wrap">
+            {platforms.map((p) => (
+              <button
+                key={p.name}
+                onClick={() => { setPlatform(p.name); setPage(1); }}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  platform === p.name
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
+                }`}
+              >
+                {p.icon} {p.display}
+              </button>
+            ))}
           </div>
 
           {/* Tags */}
