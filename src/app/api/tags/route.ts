@@ -1,15 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUserTags } from '@/lib/content';
+import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
+import { createServiceClient } from '@/lib/supabase/server';
 
-export async function GET(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    const result = await getUserTags(userId);
-    if (!result.success) return NextResponse.json({ success: false, error: result.error }, { status: 500 });
-    return NextResponse.json({ success: true, data: result.data });
-  } catch (error) {
-    console.error('GET /api/tags error:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+export async function GET() {
+  const user = await getSession();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  const supabase = createServiceClient();
+  
+  // Get all tags used by this user's contents
+  const { data, error } = await supabase
+    .from('content_tags')
+    .select(`
+      tag:tags(*),
+      content:contents!inner(user_id)
+    `)
+    .eq('content.user_id', user.id);
+  
+  if (error) {
+    console.error('Failed to fetch tags:', error);
+    return NextResponse.json({ error: 'Failed to fetch tags' }, { status: 500 });
   }
+  
+  // Count tags and deduplicate
+  const tagCounts = new Map<string, { tag: unknown; count: number }>();
+  
+  for (const item of data || []) {
+    if (item.tag) {
+      const tagId = (item.tag as { id: string }).id;
+      const existing = tagCounts.get(tagId);
+      if (existing) {
+        existing.count++;
+      } else {
+        tagCounts.set(tagId, { tag: item.tag, count: 1 });
+      }
+    }
+  }
+  
+  const tags = Array.from(tagCounts.values())
+    .sort((a, b) => b.count - a.count)
+    .map(({ tag, count }) => ({ ...tag as object, count }));
+  
+  return NextResponse.json({ tags });
 }
