@@ -120,16 +120,16 @@ export function DashboardClient({ user }: DashboardClientProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-surface border-b border-border sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">moah.</h1>
+          <h1 className="text-2xl font-bold text-text-primary">moah.</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">@{user.telegram_username || 'user'}</span>
+            <span className="text-sm text-text-secondary">@{user.telegram_username || 'user'}</span>
             <button
               onClick={handleLogout}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-text-secondary hover:text-primary transition-colors"
             >
               로그아웃
             </button>
@@ -139,7 +139,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-surface rounded-xl shadow-sm p-4 mb-6">
           <div className="flex flex-wrap gap-4 items-center">
             {/* Search */}
             <input
@@ -147,7 +147,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               placeholder="검색..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 min-w-[200px] px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             />
             
             {/* Platform Filter */}
@@ -156,10 +156,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <button
                   key={p.name}
                   onClick={() => { setPlatform(p.name); setPage(1); }}
-                  className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     platform === p.name
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                   }`}
                 >
                   {p.icon} {p.display}
@@ -173,10 +173,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <div className="mt-4 flex gap-2 flex-wrap">
               <button
                 onClick={() => { setSelectedTag(null); setPage(1); }}
-                className={`px-2 py-1 rounded text-xs transition-colors ${
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                   !selectedTag
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-primary-100 text-primary-700'
+                    : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 }`}
               >
                 모든 태그
@@ -185,13 +185,13 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <button
                   key={tag.id}
                   onClick={() => { setSelectedTag(tag.name); setPage(1); }}
-                  className={`px-2 py-1 rounded text-xs transition-colors ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                     selectedTag === tag.name
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                   }`}
                 >
-                  #{tag.name} {tag.count && <span className="text-gray-400">({tag.count})</span>}
+                  #{tag.name} {tag.count && <span className="opacity-60">({tag.count})</span>}
                 </button>
               ))}
             </div>
@@ -201,12 +201,12 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* Content Grid */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : contents.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500 text-lg">저장된 콘텐츠가 없어요</p>
-            <p className="text-gray-400 mt-2">Telegram 봇에서 URL을 보내보세요!</p>
+            <p className="text-text-secondary text-lg">저장된 콘텐츠가 없어요</p>
+            <p className="text-text-tertiary mt-2">Telegram 봇에서 URL을 보내보세요!</p>
           </div>
         ) : (
           <>
@@ -214,7 +214,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               {contents.map((content) => (
                 <div
                   key={content.id}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group"
+                  className="bg-surface rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all group"
                 >
                   {/* Thumbnail */}
                   <a href={content.url} target="_blank" rel="noopener noreferrer">
@@ -226,13 +226,13 @@ export function DashboardClient({ user }: DashboardClientProps) {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl">
+                        <div className="w-full h-full flex items-center justify-center text-4xl bg-gray-50">
                           {content.platform?.icon || '🔗'}
                         </div>
                       )}
                       {/* Platform badge */}
                       <span
-                        className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium"
+                        className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium shadow-sm"
                         style={{
                           backgroundColor: content.platform?.color_bg || '#6B7280',
                           color: content.platform?.color_text || '#FFFFFF',
@@ -246,23 +246,23 @@ export function DashboardClient({ user }: DashboardClientProps) {
                   {/* Content info */}
                   <div className="p-3">
                     <a href={content.url} target="_blank" rel="noopener noreferrer">
-                      <h3 className="font-medium text-sm line-clamp-2 hover:text-blue-600">
+                      <h3 className="font-medium text-sm line-clamp-2 text-text-primary hover:text-primary transition-colors">
                         {content.title || content.url}
                       </h3>
                     </a>
                     
                     {content.creator_name && (
-                      <p className="text-xs text-gray-500 mt-1">{content.creator_name}</p>
+                      <p className="text-xs text-text-tertiary mt-1">{content.creator_name}</p>
                     )}
 
                     {/* Tags */}
                     {content.tags && content.tags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap mt-2">
+                      <div className="flex gap-1.5 flex-wrap mt-2">
                         {content.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag.id}
                             onClick={() => { setSelectedTag(tag.name); setPage(1); }}
-                            className="text-xs text-blue-600 cursor-pointer hover:underline"
+                            className="text-xs text-primary cursor-pointer hover:text-primary-700 transition-colors"
                           >
                             #{tag.name}
                           </span>
@@ -271,11 +271,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
                     )}
 
                     {/* Footer */}
-                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
-                      <span className="text-xs text-gray-400">{formatDate(content.saved_at)}</span>
+                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-border">
+                      <span className="text-xs text-text-tertiary">{formatDate(content.saved_at)}</span>
                       <button
                         onClick={() => handleDelete(content.id)}
-                        className="text-xs text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="text-xs text-text-tertiary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                       >
                         삭제
                       </button>
@@ -291,17 +291,17 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 rounded bg-gray-100 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-surface border border-border text-text-secondary hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   이전
                 </button>
-                <span className="px-4 py-2">
+                <span className="px-4 py-2 text-text-secondary">
                   {page} / {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 rounded bg-gray-100 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-surface border border-border text-text-secondary hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   다음
                 </button>
