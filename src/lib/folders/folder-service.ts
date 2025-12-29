@@ -116,10 +116,13 @@ export async function moveContent(contentId: string, fromFolderId: string, toFol
 export async function getContentFolders(contentId: string): Promise<{ success: boolean; folders?: Folder[]; error?: string }> {
   try {
     const supabase = createServiceClient();
-    const { data, error } = await supabase.from('folder_contents').select('folder:folders(*)').eq('content_id', contentId);
+    const { data, error } = await supabase.from('folder_contents').select('folder_id').eq('content_id', contentId);
     if (error) return { success: false, error: error.message };
-    const folders = (data || []).map(d => d.folder).filter(Boolean) as Folder[];
-    return { success: true, folders };
+    const folderIds = (data || []).map(d => d.folder_id);
+    if (folderIds.length === 0) return { success: true, folders: [] };
+    const { data: folders, error: foldersError } = await supabase.from('folders').select('*').in('id', folderIds);
+    if (foldersError) return { success: false, error: foldersError.message };
+    return { success: true, folders: folders || [] };
   } catch (error) { return { success: false, error: 'Failed to get content folders' }; }
 }
 
