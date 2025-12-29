@@ -38,21 +38,39 @@ export async function createLoginToken(userId: string): Promise<string | null> {
 export async function verifyLoginToken(token: string): Promise<SessionUser | null> {
   const supabase = createServiceClient();
   
-  const { data: tokenData, error } = await supabase
+  // Step 1: Get token data
+  const { data: tokenData, error: tokenError } = await supabase
     .from('login_tokens')
-    .select('*, user:users(*)')
+    .select('*')
     .eq('token', token)
     .is('used_at', null)
     .gt('expires_at', new Date().toISOString())
     .single();
   
-  if (error || !tokenData) return null;
+  if (tokenError || !tokenData) {
+    console.error('Token verification failed:', tokenError);
+    return null;
+  }
+  
+  // Step 2: Get user data
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', tokenData.user_id)
+    .single();
+  
+  if (userError || !userData) {
+    console.error('User fetch failed:', userError);
+    return null;
+  }
   
   // Mark token as used
-  await supabase.from('login_tokens').update({ used_at: new Date().toISOString() }).eq('id', tokenData.id);
+  await supabase
+    .from('login_tokens')
+    .update({ used_at: new Date().toISOString() })
+    .eq('id', tokenData.id);
   
-  const user = tokenData.user as SessionUser;
-  return user;
+  return userData as SessionUser;
 }
 
 export async function createSession(user: SessionUser): Promise<string> {
@@ -87,16 +105,27 @@ export async function getSession(): Promise<SessionUser | null> {
   if (!sessionToken) return null;
   
   const supabase = createServiceClient();
-  const { data, error } = await supabase
+  
+  // Step 1: Get token data
+  const { data: tokenData, error: tokenError } = await supabase
     .from('login_tokens')
-    .select('*, user:users(*)')
+    .select('*')
     .eq('token', sessionToken)
     .gt('expires_at', new Date().toISOString())
     .single();
   
-  if (error || !data) return null;
+  if (tokenError || !tokenData) return null;
   
-  return data.user as SessionUser;
+  // Step 2: Get user data
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', tokenData.user_id)
+    .single();
+  
+  if (userError || !userData) return null;
+  
+  return userData as SessionUser;
 }
 
 export async function destroySession(): Promise<void> {
