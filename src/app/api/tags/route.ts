@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { createServiceClient } from '@/lib/supabase/server';
 
+interface Tag {
+  id: string;
+  name: string;
+}
+
 export async function GET() {
   const user = await getSession();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,23 +28,24 @@ export async function GET() {
   }
   
   // Count tags and deduplicate
-  const tagCounts = new Map<string, { tag: unknown; count: number }>();
+  const tagCounts = new Map<string, { tag: Tag; count: number }>();
   
   for (const item of data || []) {
-    if (item.tag) {
-      const tagId = (item.tag as { id: string }).id;
+    const tag = item.tag as unknown as Tag | null;
+    if (tag && tag.id) {
+      const tagId = tag.id;
       const existing = tagCounts.get(tagId);
       if (existing) {
         existing.count++;
       } else {
-        tagCounts.set(tagId, { tag: item.tag, count: 1 });
+        tagCounts.set(tagId, { tag, count: 1 });
       }
     }
   }
   
   const tags = Array.from(tagCounts.values())
     .sort((a, b) => b.count - a.count)
-    .map(({ tag, count }) => ({ ...tag as object, count }));
+    .map(({ tag, count }) => ({ ...tag, count }));
   
   return NextResponse.json({ tags });
 }
