@@ -34,12 +34,15 @@ export interface TelegramUpdate {
   message?: TelegramMessage;
 }
 
-export async function sendMessage(chatId: number, text: string): Promise<boolean> {
+export async function sendMessage(chatId: number, text: string, parseMode?: 'HTML' | 'Markdown'): Promise<boolean> {
   try {
+    const body: Record<string, unknown> = { chat_id: chatId, text };
+    if (parseMode) body.parse_mode = parseMode;
+    
     const response = await fetch(`${TELEGRAM_API_BASE}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text }),
+      body: JSON.stringify(body),
     });
     const result = await response.json();
     return result.ok;
@@ -67,9 +70,11 @@ export function extractUrls(message: TelegramMessage): string[] {
 }
 
 export const MESSAGES = {
-  WELCOME: '👋 moah에 오신 것을 환영합니다!\n\nURL을 보내주시면 자동으로 저장해드려요.',
-  HELP: '📝 사용법\n\n1. URL을 보내주세요\n2. 자동으로 저장됩니다\n3. moah 앱에서 확인하세요',
+  WELCOME: '👋 moah에 오신 것을 환영합니다!\n\nURL을 보내주시면 자동으로 저장해드려요.\n\n📱 웹에서 보려면 /login 을 입력하세요.',
+  HELP: '📝 사용법\n\n1. URL을 보내주세요\n2. 자동으로 저장됩니다\n3. /login 으로 웹에서 확인하세요',
   NO_URL: '❌ URL을 찾을 수 없어요. 유효한 URL을 보내주세요.',
   SAVING: '⏳ 저장 중...',
   ERROR: '❌ 오류가 발생했어요. 다시 시도해주세요.',
+  LOGIN_LINK: '🔐 아래 링크를 클릭하면 웹에서 로그인돼요!\n\n⏰ 10분 동안 유효합니다.',
+  LOGIN_ERROR: '❌ 로그인 링크 생성에 실패했어요. 다시 시도해주세요.',
 };
