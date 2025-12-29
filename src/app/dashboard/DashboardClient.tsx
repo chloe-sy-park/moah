@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { SessionUser } from '@/lib/auth';
+import { BottomTabBar } from '@/components/BottomTabBar';
 
 interface Platform {
   id: string;
@@ -120,16 +121,16 @@ export function DashboardClient({ user }: DashboardClientProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
       <header className="bg-surface border-b border-border sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-text-primary">moah.</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-text-secondary">@{user.telegram_username || 'user'}</span>
+            <span className="text-sm text-text-secondary hidden sm:block">@{user.telegram_username || 'user'}</span>
             <button
               onClick={handleLogout}
-              className="text-sm text-text-secondary hover:text-primary transition-colors"
+              className="text-sm text-text-secondary hover:text-primary transition-colors hidden md:block"
             >
               로그아웃
             </button>
@@ -310,6 +311,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </>
         )}
       </main>
+
+      {/* Bottom Tab Bar - Mobile Only */}
+      <BottomTabBar />
     </div>
   );
 }
