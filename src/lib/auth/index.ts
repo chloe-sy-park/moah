@@ -28,7 +28,7 @@ export async function createLoginToken(userId: string): Promise<string | null> {
   });
   
   if (error) {
-    console.error('Failed to create login token:', error);
+    console.error('[AUTH] Failed to create login token:', error);
     return null;
   }
   
@@ -37,6 +37,9 @@ export async function createLoginToken(userId: string): Promise<string | null> {
 
 export async function verifyLoginToken(token: string): Promise<SessionUser | null> {
   const supabase = createServiceClient();
+  
+  console.log('[AUTH] Verifying token:', token.substring(0, 10) + '...');
+  console.log('[AUTH] Current time:', new Date().toISOString());
   
   // Step 1: Get token data
   const { data: tokenData, error: tokenError } = await supabase
@@ -47,8 +50,29 @@ export async function verifyLoginToken(token: string): Promise<SessionUser | nul
     .gt('expires_at', new Date().toISOString())
     .single();
   
+  console.log('[AUTH] Token query result:', { tokenData: tokenData ? 'found' : 'not found', tokenError });
+  
   if (tokenError || !tokenData) {
-    console.error('Token verification failed:', tokenError);
+    console.error('[AUTH] Token verification failed:', tokenError);
+    
+    // Debug: Check if token exists at all
+    const { data: anyToken } = await supabase
+      .from('login_tokens')
+      .select('*')
+      .eq('token', token)
+      .single();
+    
+    if (anyToken) {
+      console.log('[AUTH] Token exists but:', {
+        used_at: anyToken.used_at,
+        expires_at: anyToken.expires_at,
+        isExpired: new Date(anyToken.expires_at) < new Date(),
+        isUsed: anyToken.used_at !== null
+      });
+    } else {
+      console.log('[AUTH] Token does not exist in database');
+    }
+    
     return null;
   }
   
@@ -59,8 +83,10 @@ export async function verifyLoginToken(token: string): Promise<SessionUser | nul
     .eq('id', tokenData.user_id)
     .single();
   
+  console.log('[AUTH] User query result:', { userData: userData ? 'found' : 'not found', userError });
+  
   if (userError || !userData) {
-    console.error('User fetch failed:', userError);
+    console.error('[AUTH] User fetch failed:', userError);
     return null;
   }
   
@@ -69,6 +95,8 @@ export async function verifyLoginToken(token: string): Promise<SessionUser | nul
     .from('login_tokens')
     .update({ used_at: new Date().toISOString() })
     .eq('id', tokenData.id);
+  
+  console.log('[AUTH] Token marked as used, returning user');
   
   return userData as SessionUser;
 }
