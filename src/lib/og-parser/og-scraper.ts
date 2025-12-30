@@ -16,12 +16,76 @@ export interface ExtractedMetadata {
   normalizedUrl: string;
 }
 
+// Instagram oEmbed API response type
+interface InstagramOEmbedResponse {
+  title?: string;
+  author_name?: string;
+  thumbnail_url?: string;
+  provider_name?: string;
+}
+
+/**
+ * Extract metadata from Instagram using Facebook Graph API oEmbed
+ */
+async function extractInstagramMetadata(url: string): Promise<ExtractedMetadata | null> {
+  const appId = process.env.FACEBOOK_APP_ID;
+  const appSecret = process.env.FACEBOOK_APP_SECRET;
+
+  if (!appId || !appSecret) {
+    console.warn('Facebook App credentials not configured, falling back to default scraper');
+    return null;
+  }
+
+  const accessToken = `${appId}|${appSecret}`;
+  const oembedUrl = `https://graph.facebook.com/v18.0/instagram_oembed?url=${encodeURIComponent(url)}&access_token=${accessToken}`;
+
+  try {
+    const response = await fetch(oembedUrl, { 
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (!response.ok) {
+      console.error('Instagram oEmbed API error:', response.status);
+      return null;
+    }
+
+    const data: InstagramOEmbedResponse = await response.json();
+    const platformInfo = PLATFORM_INFO['instagram'];
+    const creatorName = data.author_name || extractCreatorFromUrl(url, 'instagram');
+
+    return {
+      title: data.title || (creatorName ? `@${creatorName}의 Instagram 게시물` : 'Instagram 게시물'),
+      description: data.title || null,
+      image: data.thumbnail_url || null,
+      url: url,
+      siteName: data.provider_name || 'Instagram',
+      platform: 'instagram',
+      platformDisplayName: platformInfo.displayName,
+      platformIcon: platformInfo.icon,
+      creatorName: creatorName ? `@${creatorName}` : null,
+      creatorUrl: creatorName ? `https://instagram.com/${creatorName}` : null,
+      normalizedUrl: url,
+    };
+  } catch (error) {
+    console.error('Instagram oEmbed fetch error:', error);
+    return null;
+  }
+}
+
 export async function extractMetadata(url: string): Promise<ExtractedMetadata | null> {
   if (!isValidUrl(url)) return null;
 
   const normalizedUrl = normalizeUrl(url);
   const platform = detectPlatform(normalizedUrl);
   const platformInfo = PLATFORM_INFO[platform];
+
+  // Use Instagram oEmbed API for Instagram URLs
+  if (platform === 'instagram') {
+    const instagramData = await extractInstagramMetadata(normalizedUrl);
+    if (instagramData) return instagramData;
+    // Fall through to default scraper if oEmbed fails
+  }
 
   try {
     const { result, error } = await ogs({ url: normalizedUrl, timeout: 10000 });
