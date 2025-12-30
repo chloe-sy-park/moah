@@ -335,8 +335,17 @@ export function DashboardClient({ user }: DashboardClientProps) {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl bg-gray-50">
-                          {content.platform?.icon || '🔗'}
+                        /* No thumbnail - show description preview or icon */
+                        <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+                          {content.description ? (
+                            <p className="text-xs text-text-secondary line-clamp-4 text-center leading-relaxed">
+                              {content.description}
+                            </p>
+                          ) : (
+                            <span className="text-4xl opacity-50">
+                              {content.platform?.icon || '🔗'}
+                            </span>
+                          )}
                         </div>
                       )}
                       {/* Platform badge */}
@@ -359,6 +368,13 @@ export function DashboardClient({ user }: DashboardClientProps) {
                         {content.title || content.url}
                       </h3>
                     </a>
+                    
+                    {/* Description - show if thumbnail exists (so it wasn't shown above) */}
+                    {content.thumbnail_url && content.description && (
+                      <p className="text-xs text-text-tertiary mt-1.5 line-clamp-2">
+                        {content.description}
+                      </p>
+                    )}
                     
                     {content.creator_name && (
                       <p className="text-xs text-text-tertiary mt-1">{content.creator_name}</p>
