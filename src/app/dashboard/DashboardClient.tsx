@@ -278,7 +278,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                       <span className="text-xs text-text-tertiary">{formatDate(content.saved_at)}</span>
                       <button
                         onClick={() => handleDelete(content.id)}
-                        className="text-xs text-text-tertiary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                        className="text-xs text-text-tertiary hover:text-red-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all"
                       >
                         삭제
                       </button>
