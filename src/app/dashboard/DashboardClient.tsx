@@ -102,6 +102,13 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setPage(1);
   };
 
+  const clearAllFilters = () => {
+    setSearch('');
+    setPlatform('all');
+    setSelectedTag(null);
+    setPage(1);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -122,6 +129,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
     { name: 'twitter', display: 'X', icon: '🐦' },
     { name: 'web', display: 'Web', icon: '🔗' },
   ];
+
+  // Check if any filter is active
+  const hasActiveFilters = search || platform !== 'all' || selectedTag;
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -156,6 +166,69 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
         {/* Filters */}
         <div className="bg-surface rounded-xl shadow-sm p-4 mb-6">
+          {/* Active Filters - Show when any filter is applied */}
+          {hasActiveFilters && (
+            <div className="flex items-center gap-2 flex-wrap mb-4 pb-4 border-b border-border">
+              <span className="text-xs text-text-tertiary">적용된 필터:</span>
+              
+              {/* Search filter tag */}
+              {search && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-medium">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  &quot;{search}&quot;
+                  <button 
+                    onClick={() => { setSearch(''); setPage(1); }}
+                    className="ml-0.5 hover:text-primary-900 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+
+              {/* Platform filter tag */}
+              {platform !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                  {platforms.find(p => p.name === platform)?.icon} {platforms.find(p => p.name === platform)?.display}
+                  <button 
+                    onClick={() => { setPlatform('all'); setPage(1); }}
+                    className="ml-0.5 hover:text-blue-900 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+
+              {/* Tag filter tag */}
+              {selectedTag && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                  #{selectedTag}
+                  <button 
+                    onClick={() => { setSelectedTag(null); setPage(1); }}
+                    className="ml-0.5 hover:text-green-900 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+
+              {/* Clear all button */}
+              <button 
+                onClick={clearAllFilters}
+                className="text-xs text-text-tertiary hover:text-text-secondary transition-colors ml-auto"
+              >
+                모두 초기화
+              </button>
+            </div>
+          )}
+
           {/* Platform Filter - Horizontal scroll on mobile */}
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 md:flex-wrap scrollbar-hide -mx-1 px-1">
             {platforms.map((p) => (
@@ -215,19 +288,34 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
             </div>
-            <p className="text-text-secondary text-lg font-medium">저장된 콘텐츠가 없어요</p>
-            <p className="text-text-tertiary mt-2 mb-6">Telegram 봇에서 URL을 보내보세요!</p>
-            <a
-              href={TELEGRAM_BOT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0088cc] hover:bg-[#0077b5] text-white font-medium rounded-lg transition-colors shadow-sm"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-              </svg>
-              Telegram 봇 열기
-            </a>
+            {hasActiveFilters ? (
+              <>
+                <p className="text-text-secondary text-lg font-medium">검색 결과가 없어요</p>
+                <p className="text-text-tertiary mt-2 mb-6">다른 검색어나 필터를 시도해보세요</p>
+                <button
+                  onClick={clearAllFilters}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-text-secondary font-medium rounded-lg transition-colors"
+                >
+                  필터 초기화
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-text-secondary text-lg font-medium">저장된 콘텐츠가 없어요</p>
+                <p className="text-text-tertiary mt-2 mb-6">Telegram 봇에서 URL을 보내보세요!</p>
+                <a
+                  href={TELEGRAM_BOT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0088cc] hover:bg-[#0077b5] text-white font-medium rounded-lg transition-colors shadow-sm"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                  </svg>
+                  Telegram 봇 열기
+                </a>
+              </>
+            )}
           </div>
         ) : (
           <>
