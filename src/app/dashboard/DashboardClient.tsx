@@ -156,13 +156,13 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
         {/* Filters */}
         <div className="bg-surface rounded-xl shadow-sm p-4 mb-6">
-          {/* Platform Filter */}
-          <div className="flex gap-2 flex-wrap">
+          {/* Platform Filter - Horizontal scroll on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 md:flex-wrap scrollbar-hide -mx-1 px-1">
             {platforms.map((p) => (
               <button
                 key={p.name}
                 onClick={() => { setPlatform(p.name); setPage(1); }}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   platform === p.name
                     ? 'bg-primary text-white shadow-sm'
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
@@ -173,12 +173,12 @@ export function DashboardClient({ user }: DashboardClientProps) {
             ))}
           </div>
 
-          {/* Tags */}
+          {/* Tags - Also horizontal scroll on mobile */}
           {tags.length > 0 && (
-            <div className="mt-4 flex gap-2 flex-wrap">
+            <div className="mt-4 flex gap-2 overflow-x-auto pb-2 md:pb-0 md:flex-wrap scrollbar-hide -mx-1 px-1">
               <button
                 onClick={() => { setSelectedTag(null); setPage(1); }}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   !selectedTag
                     ? 'bg-primary-100 text-primary-700'
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
@@ -190,7 +190,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <button
                   key={tag.id}
                   onClick={() => { setSelectedTag(tag.name); setPage(1); }}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                     selectedTag === tag.name
                       ? 'bg-primary-100 text-primary-700'
                       : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
